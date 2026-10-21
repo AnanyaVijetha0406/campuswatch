@@ -37,6 +37,10 @@ _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD = [0.229, 0.224, 0.225]
 
 CNN_FEAT_DIM = 512
+# Seek to each sampled frame (instead of decoding through) only for clips longer
+# than this many frames AND larger than this many pixels per frame.
+SEQUENTIAL_READ_MAX_FRAMES = 450
+SEQUENTIAL_READ_MAX_PIXELS = 640 * 480
 BBOX_DIM = 4  # x1, y1, x2, y2 normalized to [0, 1]
 FEATURE_DIM = CNN_FEAT_DIM + BBOX_DIM  # 516 — must match config.INPUT_SIZE
 
@@ -478,7 +482,11 @@ def read_sampled_frames(cap: cv2.VideoCapture, indices: np.ndarray) -> list[np.n
     wanted = {int(i) for i in indices}
     found: dict[int, np.ndarray | None] = {}
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
-    if total <= 0:
+    # Long, high-resolution clips (e.g. phone recordings at 1080p/4K) are cheaper
+    # to seek through, since they have frequent keyframes, than to decode frame by
+    # frame. Small clips are fastest and steadiest read sequentially.
+    pixels = (cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0) * (cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+    if total <= 0 or (total > SEQUENTIAL_READ_MAX_FRAMES and pixels > SEQUENTIAL_READ_MAX_PIXELS):
         for i in sorted(wanted):
             cap.set(cv2.CAP_PROP_POS_FRAMES, i)
             ok, frame = cap.read()

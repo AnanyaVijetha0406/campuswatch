@@ -20,13 +20,19 @@ import config
 import inference
 
 try:
-    import spaces  # present on Hugging Face Spaces; ZeroGPU needs one @spaces.GPU function
+    import spaces  # present on Hugging Face Spaces
 
-    gpu_task = spaces.GPU(duration=60)
+    gpu_task = spaces.GPU(duration=10)
 except ImportError:  # local run / Docker: no-op decorator
 
     def gpu_task(fn):
         return fn
+
+
+@gpu_task
+def _zerogpu_registration() -> None:
+    """ZeroGPU refuses to start a Space with no @spaces.GPU function. The model
+    runs on CPU, so this is never called and no GPU quota is spent per request."""
 
 
 inference.init()
@@ -46,7 +52,6 @@ FOOTER = (
 )
 
 
-@gpu_task
 def analyse(video_path: str | None):
     if not video_path:
         raise gr.Error("Please upload or record a video first.")
