@@ -1,0 +1,101 @@
+{
+  "device": "cpu",
+  "input_size": 516,
+  "num_frames": 16,
+  "num_persons": 1,
+  "person_select": "area",
+  "best_threshold": 0.5463369129625624,
+  "best_val_loss": 0.6642546057701111,
+  "pos_weight": 1.0,
+  "training": {
+    "batch_size": 8,
+    "lr": 0.0001,
+    "epochs_run": 6,
+    "early_stop_patience": 5
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6817554632822672,
+      "val_loss": 0.6642546057701111,
+      "lr": 0.0001
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.6529288093249003,
+      "val_loss": 0.6658183336257935,
+      "lr": 0.0001
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.6718702912330627,
+      "val_loss": 0.6660274267196655,
+      "lr": 0.0001
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.6441673636436462,
+      "val_loss": 0.6662459969520569,
+      "lr": 0.0001
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.610448956489563,
+      "val_loss": 0.6658506989479065,
+      "lr": 5e-05
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.5894291003545126,
+      "val_loss": 0.665014386177063,
+      "lr": 5e-05
+    }
+  ],
+  "val_at_tuned_threshold": {
+    "threshold": 0.5463369129625624,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "confusion_matrix": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "nonviolence",
+      "violence"
+    ],
+    "n_samples": 2,
+    "split": "rlvs_val"
+  },
+  "test_at_tuned_threshold": {
+    "threshold": 0.5463369129625624,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
+    "confusion_matrix": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "nonviolence",
+      "violence"
+    ],
+    "n_samples": 2,
+    "split": "rlvs_test",
+    "tuned_on": "val"
+  }
+}

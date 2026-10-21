@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+uploads/
+.torch/
+.claude/
+.vscode/
+*.code-workspace
+
+# Large / unlicensed data is not committed — see README for download links
+data/
+
+# Only the deployed checkpoint is committed (outputs_no_UCF/); keep the
+# metrics JSONs of the other runs for the ablation table, but not their weights
+outputs/*.pt
+outputs_k3/*.pt
+yolov8s.pt
+
+# Personal / working notes
+PROJECT_SUMMARY.md
+CONTINUE.md
+PAPER_CITATIONS_TASK.md

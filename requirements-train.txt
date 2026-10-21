@@ -1,0 +1,4 @@
+# Extra packages needed only for training / evaluation scripts
+# (finetune_combined.py, eval_*.py). Not required to run the dashboard.
+-r requirements.txt
+scikit-learn==1.8.0

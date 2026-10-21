@@ -1,0 +1,16 @@
+data/
+uploads/
+outputs/
+outputs_k3/
+**/__pycache__/
+*.pyc
+.claude/
+.git/
+.vscode/
+*.code-workspace
+*.tex
+*.pdf
+*.md
+!README.md
+yolov8s.pt
+ragging_labels.csv

@@ -1,0 +1,11 @@
+# Runtime dependencies for the dashboard and inference scripts.
+# torch/torchvision are CPU builds; install them from the PyTorch CPU index:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
+# (the Dockerfile does this for you), then: pip install -r requirements.txt
+torch==2.11.0
+torchvision==0.26.0
+ultralytics==8.4.95
+opencv-python-headless==5.0.0.93
+numpy==2.3.5
+flask==3.1.2
+gunicorn==23.0.0
