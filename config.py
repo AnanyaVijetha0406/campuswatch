@@ -5,10 +5,16 @@ on Kaggle (only edit path values if your Kaggle input mount differs).
 """
 from pathlib import Path
 
+import os
+
 try:
     import torch
 
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    # CAMPUSWATCH_DEVICE forces a device (the ZeroGPU Space pins "cpu" because
+    # CUDA is only emulated outside @spaces.GPU functions).
+    DEVICE = os.environ.get("CAMPUSWATCH_DEVICE") or (
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )
 except ImportError:
     DEVICE = "cpu"
 

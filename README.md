@@ -3,8 +3,10 @@ title: CampusWatch
 emoji: 🎥
 colorFrom: yellow
 colorTo: red
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 5.50.0
+python_version: "3.12.12"
+app_file: gradio_app.py
 pinned: false
 ---
 
@@ -14,7 +16,7 @@ A web dashboard that takes a short video clip and says whether it shows violence
 or ragging-like physical aggression, with a confidence score.
 
 **Live demo:** _add the Hugging Face Space URL here after deploying_
-**Demo login:** _add the username/password you set in the Space secrets_ (local default: `admin` / `admin123`)
+**Login:** none for the Gradio Space. The Flask dashboard (`app.py`, used by the Docker image) asks for `APP_USERNAME` / `APP_PASSWORD` (local default: `admin` / `admin123`).
 
 > **This is a screening aid, not an evidence tool.** It can miss incidents and
 > raise false alarms (see [Limitations](#limitations)). A person must review every
@@ -100,13 +102,24 @@ uploaded them, and deleted on the next upload, on logout, or after 15 minutes.
 
 ## Deploy to Hugging Face Spaces
 
-1. Create a Space at https://huggingface.co/new-space, choose **Docker** as the SDK.
-2. Push this repository to the Space (`git remote add space https://huggingface.co/spaces/<you>/<name>` then `git push space main`). The YAML block at the top of this README configures the port.
-3. In the Space **Settings → Variables and secrets**, add `APP_USERNAME`, `APP_PASSWORD` and `SECRET_KEY` as secrets.
-4. Wait for the build to finish, open the Space URL, and put it at the top of this README.
+The live demo runs `gradio_app.py` (same model and thresholds as the Flask dashboard)
+on a Gradio Space, which is free. The Docker SDK is a paid Spaces feature, so the Docker
+image is for running the project yourself, not for the Space.
 
-The free CPU tier works. The first request after the Space wakes from sleep is slower.
-Vercel is not suitable: PyTorch and OpenCV exceed its function size limit.
+1. Create a Space at https://huggingface.co/new-space with the **Gradio** SDK (Blank template). If only ZeroGPU hardware is offered on your account, pick it; `gradio_app.py` keeps the models on CPU and wraps the request in `@spaces.GPU`, as ZeroGPU requires.
+2. Push this repository to the Space. The YAML block at the top of this README sets the Gradio version, Python version and entry file:
+
+   ```bash
+   git remote add space https://huggingface.co/spaces/<you>/<name>
+   git push space main --force
+   ```
+
+   (`--force` replaces the starter files the Space was created with.)
+3. Wait for the build to finish and open the Space URL.
+
+The first request after the Space wakes from sleep is slower. Vercel is not suitable:
+PyTorch and OpenCV exceed its function size limit. The Gradio Space has no login page;
+the Flask dashboard (`app.py`, with login) is what the Docker image runs.
 
 ## Results
 

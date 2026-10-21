@@ -29,7 +29,7 @@ RUN pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.p
 # Bake the ImageNet ResNet18 weights into the image so first start needs no network.
 RUN python -c "from torchvision import models; models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)"
 
-COPY config.py model.py app.py ./
+COPY config.py model.py inference.py app.py ./
 COPY templates ./templates
 COPY static ./static
 COPY yolov8n.pt ./

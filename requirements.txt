@@ -1,7 +1,7 @@
-# Runtime dependencies for the dashboard and inference scripts.
-# torch/torchvision are CPU builds; install them from the PyTorch CPU index:
+# Runtime dependencies for the dashboards and inference scripts.
+# For a small CPU-only PyTorch locally, install torch/torchvision first:
 #   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
-# (the Dockerfile does this for you), then: pip install -r requirements.txt
+# (the Dockerfile does this). The Gradio Space adds gradio itself; see README front-matter.
 torch==2.11.0
 torchvision==0.26.0
 ultralytics==8.4.95

@@ -434,7 +434,7 @@ def encode_frames_persons(
     if not frames_bgr:
         return outs
 
-    results = yolo.predict(frames_bgr, verbose=False, classes=[0])
+    results = yolo.predict(frames_bgr, verbose=False, classes=[0], device=device)
 
     crop_tensors: list[torch.Tensor] = []
     bbox_vecs: list[np.ndarray] = []
