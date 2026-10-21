@@ -15,7 +15,7 @@ pinned: false
 A web dashboard that takes a short video clip and says whether it shows violence
 or ragging-like physical aggression, with a confidence score.
 
-**Live demo:** _add the Hugging Face Space URL here after deploying_
+**Live demo:** https://huggingface.co/spaces/AnanyaVij/campuswatch (free ZeroGPU Space; the first request after idle can take a minute while it wakes)
 **Login:** none for the Gradio Space. The Flask dashboard (`app.py`, used by the Docker image) asks for `APP_USERNAME` / `APP_PASSWORD` (local default: `admin` / `admin123`).
 
 > **This is a screening aid, not an evidence tool.** It can miss incidents and
