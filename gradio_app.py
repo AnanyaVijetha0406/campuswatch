@@ -68,20 +68,20 @@ footer { display: none !important; }
 
 .cw-header {
     display: flex; justify-content: space-between; align-items: center;
-    background: #111827; padding: 15px 25px; border-bottom: 2px solid #ff7a00;
+    background: #111827; padding: 10px 25px; border-bottom: 2px solid #ff7a00;
 }
 .cw-logo { font-size: 22px; font-weight: bold; color: #ff7a00; letter-spacing: 1px; }
 .cw-status { color: #22c55e; font-size: 14px; }
 
-.cw-body { padding: 25px; gap: 20px !important; }
+.cw-body { padding: 14px 25px; gap: 16px !important; }
 .cw-card {
     background: #111827 !important; border-radius: 12px !important;
-    padding: 20px !important; box-shadow: 0 0 20px rgba(255,122,0,0.08);
-    border: none !important; gap: 12px !important;
+    padding: 14px 18px !important; box-shadow: 0 0 20px rgba(255,122,0,0.08);
+    border: none !important; gap: 8px !important;
 }
-.cw-card h3 { color: #ff7a00; margin: 0 0 6px; font-size: 1.17em; }
-.cw-note { color: #cbd5e1; font-size: 14px; margin: 4px 0; }
-.cw-warn { color: #8a94a6; font-size: 12px; margin-top: 8px; }
+.cw-card h3 { color: #ff7a00; margin: 0 0 4px; font-size: 1.1em; }
+.cw-note { color: #cbd5e1; font-size: 13px; margin: 2px 0; }
+.cw-warn { color: #8a94a6; font-size: 11px; margin-top: 6px; }
 
 .cw-upload { border: 2px dashed #ff7a00 !important; border-radius: 10px !important;
              background: #0b1220 !important; }
@@ -90,26 +90,29 @@ footer { display: none !important; }
     color: #fff !important; font-size: 16px !important; border-radius: 6px !important;
 }
 
-.cw-empty { color: #667; font-size: 13px; padding: 30px 10px; text-align: center; }
+.cw-empty { color: #667; font-size: 13px; padding: 20px 10px; text-align: center; }
+.cw-video video { max-height: 34vh; }
 .cw-result { text-align: center; }
+.cw-result h2 { margin: 6px 0; font-size: 1.3em; }
+.cw-result p { margin: 3px 0; }
 .cw-threat { padding: 6px 18px; border-radius: 20px; font-weight: bold;
              margin-bottom: 10px; display: inline-block; color: #fff; }
 .cw-high { background: red; box-shadow: 0 0 15px red; animation: cw-pulse 1s infinite; }
 .cw-low { background: green; box-shadow: 0 0 10px green; }
 @keyframes cw-pulse { 50% { transform: scale(1.05); } }
-.cw-progress { background: #1e293b; border-radius: 20px; overflow: hidden; height: 10px; margin: 10px 0; }
+.cw-progress { background: #1e293b; border-radius: 20px; overflow: hidden; height: 10px; margin: 6px 0; }
 .cw-bar { height: 10px; background: linear-gradient(to right, #ff7a00, red); }
-.cw-siren { font-size: 55px; animation: cw-blink 1s infinite; }
+.cw-siren { font-size: 40px; animation: cw-blink 1s infinite; }
 @keyframes cw-blink { 50% { opacity: 0.4; } }
 
 .cw-stats {
-    margin: 0 25px 25px; background: #111827; padding: 15px; border-radius: 12px;
+    margin: 0 25px 14px; background: #111827; padding: 10px 15px; border-radius: 12px;
     display: flex; justify-content: space-between; border: 1px solid #1e293b;
     flex-wrap: wrap; gap: 10px;
 }
 .cw-stat { text-align: center; flex: 1; min-width: 90px; }
 .cw-stat-label { font-size: 12px; color: #aaa; }
-.cw-stat-value { font-size: 16px; font-weight: bold; margin-top: 5px; color: #fff; }
+.cw-stat-value { font-size: 16px; font-weight: bold; margin-top: 3px; color: #fff; }
 """
 
 HEADER_HTML = """
@@ -195,13 +198,20 @@ with gr.Blocks(
                 label="Select Video",
                 file_types=["video"],
                 type="filepath",
+                height=120,
                 elem_classes="cw-upload",
             )
             run = gr.Button("Detect", elem_classes="cw-detect")
         with gr.Column(scale=3, elem_classes="cw-card"):
             gr.HTML("<h3>Uploaded Clip</h3>")
             preview = gr.Video(
-                show_label=False, interactive=False, container=False, height=360
+                show_label=False,
+                interactive=False,
+                container=False,
+                height=280,
+                show_share_button=False,
+                show_download_button=False,
+                elem_classes="cw-video",
             )
         with gr.Column(scale=2, elem_classes="cw-card"):
             result = gr.HTML(EMPTY_RESULT_HTML)
