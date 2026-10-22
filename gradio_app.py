@@ -1,11 +1,12 @@
 """
 Gradio front-end for Hugging Face Spaces (free CPU tier, no Docker needed).
 
-Same model and thresholds as the Flask dashboard in app.py; the shared logic
-lives in inference.py. Run locally with:  python gradio_app.py
+Same model, thresholds and look as the Flask dashboard in app.py; the shared
+logic lives in inference.py. Run locally with:  python gradio_app.py
 """
 from __future__ import annotations
 
+import html
 import os
 import time
 from pathlib import Path
@@ -37,24 +38,138 @@ def _zerogpu_registration() -> None:
 
 inference.init()
 
-TITLE = "CampusWatch — campus ragging / violence screening"
-DESCRIPTION = (
-    f"Upload a short clip (up to {int(inference.MAX_VIDEO_SECONDS)} s). The model samples "
-    f"{config.NUM_FRAMES} frames, finds the main person with YOLOv8n, embeds the crop with "
-    "ResNet18 and classifies the sequence with a BiLSTM + temporal attention head.\n\n"
-    "**Screening aid only.** Results can be wrong and must be reviewed by a person "
-    "before any action is taken."
-)
-FOOTER = (
-    f"Decision threshold {inference.threshold:.4f} (tuned on validation). "
-    f"{inference.accuracy_label.title()}: {inference.accuracy_display}. "
-    "See the README for datasets, results and limitations."
-)
+# Lets the result panel play the alarm: served at /gradio_api/file=static/alarm.wav
+gr.set_static_paths(paths=[config.PROJECT_ROOT / "static"])
+ALARM_URL = "/gradio_api/file=static/alarm.wav"
+
+CSS = """
+:root, .dark, .gradio-container {
+    --body-background-fill: #0b1220;
+    --background-fill-primary: #111827;
+    --background-fill-secondary: #0b1220;
+    --block-background-fill: #111827;
+    --block-border-color: #1e293b;
+    --border-color-primary: #1e293b;
+    --body-text-color: #ffffff;
+    --body-text-color-subdued: #aab4c3;
+    --block-label-text-color: #aab4c3;
+    --input-background-fill: #0b1220;
+    --color-accent: #ff7a00;
+    --button-primary-background-fill: linear-gradient(45deg, #ff7a00, #ff9a3c);
+    --button-primary-background-fill-hover: linear-gradient(45deg, #ff7a00, #ff9a3c);
+    --button-primary-text-color: #ffffff;
+}
+body, .gradio-container {
+    background: #0b1220 !important;
+    font-family: 'Segoe UI', sans-serif !important;
+}
+.gradio-container { max-width: 100% !important; padding: 0 !important; }
+footer { display: none !important; }
+
+.cw-header {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #111827; padding: 15px 25px; border-bottom: 2px solid #ff7a00;
+}
+.cw-logo { font-size: 22px; font-weight: bold; color: #ff7a00; letter-spacing: 1px; }
+.cw-status { color: #22c55e; font-size: 14px; }
+
+.cw-body { padding: 25px; gap: 20px !important; }
+.cw-card {
+    background: #111827 !important; border-radius: 12px !important;
+    padding: 20px !important; box-shadow: 0 0 20px rgba(255,122,0,0.08);
+    border: none !important; gap: 12px !important;
+}
+.cw-card h3 { color: #ff7a00; margin: 0 0 6px; font-size: 1.17em; }
+.cw-note { color: #cbd5e1; font-size: 14px; margin: 4px 0; }
+.cw-warn { color: #8a94a6; font-size: 12px; margin-top: 8px; }
+
+.cw-upload { border: 2px dashed #ff7a00 !important; border-radius: 10px !important;
+             background: #0b1220 !important; }
+.cw-detect {
+    background: linear-gradient(45deg, #ff7a00, #ff9a3c) !important; border: none !important;
+    color: #fff !important; font-size: 16px !important; border-radius: 6px !important;
+}
+
+.cw-empty { color: #667; font-size: 13px; padding: 30px 10px; text-align: center; }
+.cw-result { text-align: center; }
+.cw-threat { padding: 6px 18px; border-radius: 20px; font-weight: bold;
+             margin-bottom: 10px; display: inline-block; color: #fff; }
+.cw-high { background: red; box-shadow: 0 0 15px red; animation: cw-pulse 1s infinite; }
+.cw-low { background: green; box-shadow: 0 0 10px green; }
+@keyframes cw-pulse { 50% { transform: scale(1.05); } }
+.cw-progress { background: #1e293b; border-radius: 20px; overflow: hidden; height: 10px; margin: 10px 0; }
+.cw-bar { height: 10px; background: linear-gradient(to right, #ff7a00, red); }
+.cw-siren { font-size: 55px; animation: cw-blink 1s infinite; }
+@keyframes cw-blink { 50% { opacity: 0.4; } }
+
+.cw-stats {
+    margin: 0 25px 25px; background: #111827; padding: 15px; border-radius: 12px;
+    display: flex; justify-content: space-between; border: 1px solid #1e293b;
+    flex-wrap: wrap; gap: 10px;
+}
+.cw-stat { text-align: center; flex: 1; min-width: 90px; }
+.cw-stat-label { font-size: 12px; color: #aaa; }
+.cw-stat-value { font-size: 16px; font-weight: bold; margin-top: 5px; color: #fff; }
+"""
+
+HEADER_HTML = """
+<div class="cw-header">
+  <div class="cw-logo">CampusWatch</div>
+  <div class="cw-status">● System Active</div>
+</div>
+"""
+
+UPLOAD_NOTES_HTML = f"""
+<h3>Upload Feed</h3>
+<p class="cw-note">Supported formats: MP4, AVI, MOV, MKV, WEBM</p>
+<p class="cw-note">Max length: {int(inference.MAX_VIDEO_SECONDS)} s</p>
+<p class="cw-note">Frames sampled per clip: {config.NUM_FRAMES}</p>
+<p class="cw-warn">Screening aid only: results can be wrong and must be reviewed by a person
+before any action is taken.</p>
+"""
+
+EMPTY_RESULT_HTML = '<h3>Detection Result</h3><div class="cw-empty">Upload a clip to run detection.</div>'
+
+
+def stats_html(processing: str = "—") -> str:
+    items = [
+        ("MODEL", '<span style="color:#22c55e;">ACTIVE</span>'),
+        ("FRAMES", str(config.NUM_FRAMES)),
+        ("PROCESSING", html.escape(processing)),
+        (html.escape(inference.accuracy_label), html.escape(inference.accuracy_display)),
+        ("THRESHOLD", f"{inference.threshold:.4f}"),
+    ]
+    cells = "".join(
+        f'<div class="cw-stat"><div class="cw-stat-label">{label}</div>'
+        f'<div class="cw-stat-value">{value}</div></div>'
+        for label, value in items
+    )
+    return f'<div class="cw-stats">{cells}</div>'
+
+
+def result_html(pred: dict) -> str:
+    conf = f"{pred['confidence'] * 100:.1f}%"
+    bar = f'<div class="cw-progress"><div class="cw-bar" style="width:{conf};"></div></div>'
+    if pred["is_violence"]:
+        return (
+            '<div class="cw-result"><h3>Detection Result</h3>'
+            '<div class="cw-threat cw-high">HIGH THREAT</div>'
+            f'<h2 style="color:red;">{html.escape(pred["verdict"])}</h2>'
+            f"{bar}<p>Confidence: {conf}</p><p>Status: Alert Triggered</p>"
+            '<div class="cw-siren">🚨</div>'
+            f'<audio autoplay><source src="{ALARM_URL}" type="audio/wav"></audio></div>'
+        )
+    return (
+        '<div class="cw-result"><h3>Detection Result</h3>'
+        '<div class="cw-threat cw-low">SAFE</div>'
+        f'<h2 style="color:#22c55e;">{html.escape(pred["verdict"])}</h2>'
+        f"{bar}<p>Confidence: {conf}</p><p>Status: Normal Activity</p></div>"
+    )
 
 
 def analyse(video_path: str | None):
     if not video_path:
-        raise gr.Error("Please upload or record a video first.")
+        raise gr.Error("Please choose a video file first.")
     path = Path(video_path)
     try:
         inference.check_video(path)
@@ -63,29 +178,37 @@ def analyse(video_path: str | None):
     start = time.perf_counter()
     pred = inference.predict_video(path)
     elapsed = time.perf_counter() - start
-    p = pred["probability"]
-    scores = {"Violence / ragging": p, "Normal": 1.0 - p}
-    flag = "🚨 HIGH THREAT — " if pred["is_violence"] else "✅ "
-    summary = (
-        f"### {flag}{pred['verdict']}\n"
-        f"Confidence {pred['confidence'] * 100:.1f}% · violence probability {p * 100:.1f}% "
-        f"(alert threshold {pred['threshold'] * 100:.1f}%) · processed in {elapsed:.1f}s"
-    )
-    return summary, scores
+    return result_html(pred), stats_html(f"~{elapsed:.1f}s")
 
 
-with gr.Blocks(title="CampusWatch") as demo:
-    gr.Markdown(f"# {TITLE}")
-    gr.Markdown(DESCRIPTION)
-    with gr.Row():
-        with gr.Column():
-            video = gr.Video(label="Video clip", sources=["upload"])
-            run = gr.Button("Detect", variant="primary")
-        with gr.Column():
-            summary = gr.Markdown()
-            scores = gr.Label(label="Class probabilities", num_top_classes=2)
-    gr.Markdown(FOOTER)
-    run.click(analyse, inputs=video, outputs=[summary, scores])
+with gr.Blocks(
+    title="CampusWatch",
+    theme=gr.themes.Base(primary_hue="orange", neutral_hue="slate"),
+    css=CSS,
+    js="() => { document.body.classList.add('dark'); }",
+) as demo:
+    gr.HTML(HEADER_HTML)
+    with gr.Row(elem_classes="cw-body"):
+        with gr.Column(scale=2, elem_classes="cw-card"):
+            gr.HTML(UPLOAD_NOTES_HTML)
+            file_in = gr.File(
+                label="Select Video",
+                file_types=["video"],
+                type="filepath",
+                elem_classes="cw-upload",
+            )
+            run = gr.Button("Detect", elem_classes="cw-detect")
+        with gr.Column(scale=3, elem_classes="cw-card"):
+            gr.HTML("<h3>Uploaded Clip</h3>")
+            preview = gr.Video(
+                show_label=False, interactive=False, container=False, height=360
+            )
+        with gr.Column(scale=2, elem_classes="cw-card"):
+            result = gr.HTML(EMPTY_RESULT_HTML)
+    stats = gr.HTML(stats_html())
+
+    file_in.change(lambda p: p, inputs=file_in, outputs=preview, show_progress="hidden")
+    run.click(analyse, inputs=file_in, outputs=[result, stats], api_name="analyse")
 
 # One inference at a time: the models are shared and CPU-bound.
 demo.queue(max_size=8, default_concurrency_limit=1)
