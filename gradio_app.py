@@ -63,7 +63,8 @@ body, .gradio-container {
     background: #0b1220 !important;
     font-family: 'Segoe UI', sans-serif !important;
 }
-.gradio-container { max-width: 100% !important; padding: 0 !important; }
+.gradio-container, .gradio-container main, .gradio-container .main, .gradio-container .wrap { max-width: 100% !important; }
+.gradio-container { padding: 0 !important; }
 footer { display: none !important; }
 
 .cw-header {
@@ -73,7 +74,9 @@ footer { display: none !important; }
 .cw-logo { font-size: 22px; font-weight: bold; color: #ff7a00; letter-spacing: 1px; }
 .cw-status { color: #22c55e; font-size: 14px; }
 
-.cw-body { padding: 14px 25px; gap: 16px !important; }
+.cw-body { padding: 12px 20px; gap: 14px !important; flex-wrap: nowrap !important; }
+.cw-body > div { min-width: 0 !important; }
+@media (max-width: 900px) { .cw-body { flex-wrap: wrap !important; } .cw-body > div { min-width: 100% !important; } }
 .cw-card {
     background: #111827 !important; border-radius: 12px !important;
     padding: 14px 18px !important; box-shadow: 0 0 20px rgba(255,122,0,0.08);
@@ -84,14 +87,16 @@ footer { display: none !important; }
 .cw-warn { color: #8a94a6; font-size: 11px; margin-top: 6px; }
 
 .cw-upload { border: 2px dashed #ff7a00 !important; border-radius: 10px !important;
-             background: #0b1220 !important; }
+             background: #0b1220 !important; min-height: 0 !important; }
+.cw-upload .wrap, .cw-upload button { min-height: 0 !important; padding: 8px !important; }
+.cw-upload { font-size: 13px !important; }
 .cw-detect {
     background: linear-gradient(45deg, #ff7a00, #ff9a3c) !important; border: none !important;
     color: #fff !important; font-size: 16px !important; border-radius: 6px !important;
 }
 
 .cw-empty { color: #667; font-size: 13px; padding: 20px 10px; text-align: center; }
-.cw-video video { max-height: 34vh; }
+.cw-video video { max-height: 30vh; }
 .cw-result { text-align: center; }
 .cw-result h2 { margin: 6px 0; font-size: 1.3em; }
 .cw-result p { margin: 3px 0; }
@@ -124,8 +129,7 @@ HEADER_HTML = """
 
 UPLOAD_NOTES_HTML = f"""
 <h3>Upload Feed</h3>
-<p class="cw-note">Supported formats: MP4, AVI, MOV, MKV, WEBM</p>
-<p class="cw-note">Max length: {int(inference.MAX_VIDEO_SECONDS)} s</p>
+<p class="cw-note">MP4, AVI, MOV, MKV, WEBM &middot; max {int(inference.MAX_VIDEO_SECONDS)} s</p>
 <p class="cw-note">Frames sampled per clip: {config.NUM_FRAMES}</p>
 <p class="cw-warn">Screening aid only: results can be wrong and must be reviewed by a person
 before any action is taken.</p>
@@ -187,6 +191,7 @@ def analyse(video_path: str | None):
 with gr.Blocks(
     title="CampusWatch",
     theme=gr.themes.Base(primary_hue="orange", neutral_hue="slate"),
+    fill_width=True,
     css=CSS,
     js="() => { document.body.classList.add('dark'); }",
 ) as demo:
@@ -198,7 +203,7 @@ with gr.Blocks(
                 label="Select Video",
                 file_types=["video"],
                 type="filepath",
-                height=120,
+                height=90,
                 elem_classes="cw-upload",
             )
             run = gr.Button("Detect", elem_classes="cw-detect")
@@ -208,7 +213,7 @@ with gr.Blocks(
                 show_label=False,
                 interactive=False,
                 container=False,
-                height=280,
+                height=240,
                 show_share_button=False,
                 show_download_button=False,
                 elem_classes="cw-video",
