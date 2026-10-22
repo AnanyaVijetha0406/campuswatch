@@ -88,8 +88,10 @@ footer { display: none !important; }
 
 .cw-upload { border: 2px dashed #ff7a00 !important; border-radius: 10px !important;
              background: #0b1220 !important; min-height: 0 !important; }
-.cw-upload .wrap, .cw-upload button { min-height: 0 !important; padding: 8px !important; }
-.cw-upload { font-size: 13px !important; }
+.cw-upload .wrap, .cw-upload button { min-height: 0 !important; padding: 6px !important; }
+.cw-upload { font-size: 12px !important; line-height: 1.25 !important; }
+.cw-upload .wrap, .cw-upload .wrap > *, .cw-upload button > * { font-size: 12px !important; line-height: 1.25 !important; margin: 0 !important; }
+.cw-upload svg { width: 22px !important; height: 22px !important; }
 .cw-detect {
     background: linear-gradient(45deg, #ff7a00, #ff9a3c) !important; border: none !important;
     color: #fff !important; font-size: 16px !important; border-radius: 6px !important;
@@ -201,6 +203,7 @@ with gr.Blocks(
             gr.HTML(UPLOAD_NOTES_HTML)
             file_in = gr.File(
                 label="Select Video",
+                show_label=False,
                 file_types=["video"],
                 type="filepath",
                 height=90,
