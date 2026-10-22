@@ -91,4 +91,6 @@ with gr.Blocks(title="CampusWatch") as demo:
 demo.queue(max_size=8, default_concurrency_limit=1)
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    # ssr_mode=False: Spaces enable experimental SSR by default, which re-renders
+    # the whole page after load and makes it flicker.
+    demo.launch(server_name="0.0.0.0", server_port=7860, ssr_mode=False)
