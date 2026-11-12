@@ -55,7 +55,7 @@ def main() -> None:
         f"K={config.PERSONS_PER_FRAME}  PERSON_SELECT={config.PERSON_SELECT}  "
         f"FEATURE_DIM={FEATURE_DIM}"
     )
-    assert FEATURE_DIM == config.INPUT_SIZE, (
+    assert FEATURE_DIM + (512 if config.SCENE_CONTEXT else 0) == config.INPUT_SIZE, (
         f"model.FEATURE_DIM={FEATURE_DIM} != config.INPUT_SIZE={config.INPUT_SIZE}"
     )
 

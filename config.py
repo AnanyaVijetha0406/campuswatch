@@ -56,12 +56,17 @@ PERSONS_PER_FRAME = 1
 #   "area"          — largest boxes (closest to camera; v1-style)
 PERSON_SELECT = "area"
 # ResNet18 CNN (512) + normalized bbox xyxy (4) — per person, then attention-pooled
-INPUT_SIZE = 516
+# Scene context (reviewer ablation): append a 512-d whole-frame ResNet18 feature
+# to the 516-d person feature. Off by default; the deployed model is 516-d.
+SCENE_CONTEXT = os.environ.get("CAMPUSWATCH_SCENE", "0") == "1"
+INPUT_SIZE = 516 + (512 if SCENE_CONTEXT else 0)
 CNN_FEAT_DIM = 512
 BBOX_DIM = 4
 
 THRESHOLD = 0.6613  # default; app.py prefers best_threshold from metrics.json
-RANDOM_SEED = 42
+RANDOM_SEED = int(os.environ.get("CAMPUSWATCH_SEED", "42"))
+# Temporal head: "bilstm" (deployed model) or "transformer" (reviewer baseline).
+TEMPORAL_HEAD = os.environ.get("CAMPUSWATCH_TEMPORAL", "bilstm")
 YOLO_WEIGHTS = "yolov8n.pt"
 
 # ---------------------------------------------------------------------------

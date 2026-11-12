@@ -227,6 +227,7 @@ def run_training(args: argparse.Namespace) -> dict:
         num_layers=config.LSTM_LAYERS,
         dropout=config.DROPOUT,
         num_persons=config.PERSONS_PER_FRAME,
+        temporal=config.TEMPORAL_HEAD,
     ).to(device)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
@@ -271,6 +272,8 @@ def run_training(args: argparse.Namespace) -> dict:
                     "input_size": config.INPUT_SIZE,
                     "num_frames": config.NUM_FRAMES,
                     "num_persons": config.PERSONS_PER_FRAME,
+                    "temporal": config.TEMPORAL_HEAD,
+                    "seed": config.RANDOM_SEED,
                     "person_select": config.PERSON_SELECT,
                     "epoch": epoch,
                     "val_loss": val_loss,
@@ -305,6 +308,8 @@ def run_training(args: argparse.Namespace) -> dict:
         "input_size": config.INPUT_SIZE,
         "num_frames": config.NUM_FRAMES,
         "num_persons": config.PERSONS_PER_FRAME,
+        "temporal": config.TEMPORAL_HEAD,
+        "seed": config.RANDOM_SEED,
         "person_select": config.PERSON_SELECT,
         "best_threshold": best_threshold,
         "best_val_loss": best_val_loss,

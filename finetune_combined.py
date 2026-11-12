@@ -157,6 +157,7 @@ def load_base_model(
         num_layers=config.LSTM_LAYERS,
         dropout=config.DROPOUT,
         num_persons=config.PERSONS_PER_FRAME,
+        temporal=config.TEMPORAL_HEAD,
     ).to(device)
     state = ckpt["model_state_dict"] if isinstance(ckpt, dict) and "model_state_dict" in ckpt else ckpt
     ckpt_k = checkpoint_num_persons(state)
@@ -217,6 +218,8 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=1e-5)
     parser.add_argument("--batch-size", type=int, default=config.BATCH_SIZE)
     args = parser.parse_args()
+    torch.manual_seed(config.RANDOM_SEED)
+    np.random.seed(config.RANDOM_SEED)
 
     device = config.DEVICE
     print(f"Device: {device}")
@@ -355,6 +358,8 @@ def main() -> None:
             "input_size": config.INPUT_SIZE,
             "num_frames": config.NUM_FRAMES,
             "num_persons": config.PERSONS_PER_FRAME,
+            "temporal": config.TEMPORAL_HEAD,
+            "seed": config.RANDOM_SEED,
             "person_select": config.PERSON_SELECT,
             "val_loss": best_val_loss,
         },
@@ -368,6 +373,8 @@ def main() -> None:
                 "input_size": config.INPUT_SIZE,
                 "num_frames": config.NUM_FRAMES,
                 "num_persons": config.PERSONS_PER_FRAME,
+                "temporal": config.TEMPORAL_HEAD,
+                "seed": config.RANDOM_SEED,
                 "person_select": config.PERSON_SELECT,
                 "best_threshold": best_threshold,
                 "best_val_loss": best_val_loss,

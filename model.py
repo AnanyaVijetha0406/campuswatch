@@ -127,6 +127,45 @@ class PersonAttention(nn.Module):
         return (persons * weights.unsqueeze(-1)).sum(dim=2)  # (B, T, D)
 
 
+class TemporalTransformer(nn.Module):
+    """Transformer-encoder alternative to the BiLSTM (reviewer baseline).
+
+    Projects each 516-d frame feature to d_model, adds a learned positional
+    embedding, and runs a small pre-norm Transformer encoder. Output width is
+    d_model so the same temporal attention + FC head follows.
+    """
+
+    def __init__(
+        self,
+        input_size: int,
+        d_model: int = 128,
+        nhead: int = 4,
+        num_layers: int = 2,
+        dim_feedforward: int = 256,
+        dropout: float = 0.1,
+        max_len: int = 64,
+    ) -> None:
+        super().__init__()
+        self.proj = nn.Linear(input_size, d_model)
+        self.pos = nn.Parameter(torch.zeros(1, max_len, d_model))
+        nn.init.trunc_normal_(self.pos, std=0.02)
+        layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
+            batch_first=True,
+            norm_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(layer, num_layers=num_layers)
+        self.out_dim = d_model
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, T, D) -> (B, T, d_model)
+        h = self.proj(x) + self.pos[:, : x.size(1)]
+        return self.encoder(h)
+
+
 class ViolenceClassifier(nn.Module):
     """BiLSTM + temporal attention binary classifier. Outputs raw logits.
 
@@ -142,24 +181,33 @@ class ViolenceClassifier(nn.Module):
         num_layers: int = 1,
         dropout: float = 0.3,
         num_persons: int = 1,
+        temporal: str = "bilstm",
     ) -> None:
         super().__init__()
         self.num_persons = int(num_persons)
+        self.temporal = temporal
         self.person_attn = (
             PersonAttention(input_size) if self.num_persons > 1 else None
         )
-        self.lstm = nn.LSTM(
-            input_size=input_size,
-            hidden_size=hidden_size,
-            num_layers=num_layers,
-            batch_first=True,
-            bidirectional=True,
-            dropout=0.0 if num_layers == 1 else dropout,
-        )
-        self.attn = Attention(hidden_size * 2)
+        if temporal == "transformer":
+            self.temporal_enc = TemporalTransformer(input_size)
+            out_dim = self.temporal_enc.out_dim
+        elif temporal == "bilstm":
+            self.lstm = nn.LSTM(
+                input_size=input_size,
+                hidden_size=hidden_size,
+                num_layers=num_layers,
+                batch_first=True,
+                bidirectional=True,
+                dropout=0.0 if num_layers == 1 else dropout,
+            )
+            out_dim = hidden_size * 2
+        else:
+            raise ValueError(f"Unknown temporal head: {temporal!r}")
+        self.attn = Attention(out_dim)
         self.fc = nn.Sequential(
             nn.Dropout(dropout),
-            nn.Linear(hidden_size * 2, 1),
+            nn.Linear(out_dim, 1),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -170,15 +218,18 @@ class ViolenceClassifier(nn.Module):
             else:
                 # v1 head given Top-K features: keep largest person (slot 0)
                 x = x[:, :, 0, :]
-        lstm_out, _ = self.lstm(x)
-        context = self.attn(lstm_out)
+        if self.temporal == "transformer":
+            seq_out = self.temporal_enc(x)
+        else:
+            seq_out, _ = self.lstm(x)
+        context = self.attn(seq_out)
         return self.fc(context).squeeze(-1)  # (B,) logits
 
 
 def expected_feature_shape(num_persons: int | None = None) -> tuple[int, ...]:
     k = int(num_persons if num_persons is not None else config.PERSONS_PER_FRAME)
     if k <= 1:
-        return (config.NUM_FRAMES, FEATURE_DIM)
+        return (config.NUM_FRAMES, config.INPUT_SIZE)
     return (config.NUM_FRAMES, k, FEATURE_DIM)
 
 
@@ -207,12 +258,17 @@ def load_classifier(
             num_persons = int(ckpt["num_persons"])
         else:
             num_persons = checkpoint_num_persons(state)
+    temporal = ckpt.get("temporal", "bilstm") if isinstance(ckpt, dict) else "bilstm"
+    if any(key.startswith("temporal_enc") for key in state):
+        temporal = "transformer"
+    input_size = int(ckpt.get("input_size", config.INPUT_SIZE)) if isinstance(ckpt, dict) else config.INPUT_SIZE
     net = ViolenceClassifier(
-        input_size=config.INPUT_SIZE,
+        input_size=input_size,
         hidden_size=config.LSTM_HIDDEN,
         num_layers=config.LSTM_LAYERS,
         dropout=config.DROPOUT,
         num_persons=num_persons,
+        temporal=temporal,
     ).to(device)
     net.load_state_dict(state)
     net.eval()
@@ -258,7 +314,8 @@ def _clip_bbox(
 def person_select_tag() -> str:
     """Short token for cache filenames so area and closest-group caches cannot mix."""
     method = getattr(config, "PERSON_SELECT", "closest_group")
-    return {"closest_group": "cg", "area": "area"}.get(method, str(method)[:8])
+    tag = {"closest_group": "cg", "area": "area"}.get(method, str(method)[:8])
+    return tag + ("_scene" if getattr(config, "SCENE_CONTEXT", False) else "")
 
 
 def _bbox_center(bbox: tuple[int, int, int, int]) -> np.ndarray:
@@ -553,6 +610,18 @@ def extract_video_features(
             feats.append(person_feats if k > 1 else person_feats[0])
 
     arr = np.stack(feats, axis=0)
+    if getattr(config, "SCENE_CONTEXT", False) and k <= 1:
+        # Whole-frame ResNet18 embedding per sampled frame (zeros if unreadable).
+        scene = np.zeros((len(frames), CNN_FEAT_DIM), dtype=np.float32)
+        if good:
+            batch = torch.stack(
+                [_eval_transform()(cv2.cvtColor(frames[i], cv2.COLOR_BGR2RGB)) for i in good], dim=0
+            ).to(device)
+            with torch.no_grad():
+                vecs = cnn(batch).cpu().numpy().astype(np.float32)
+            for j, i in enumerate(good):
+                scene[i] = vecs[j]
+        arr = np.concatenate([arr, scene], axis=1)
     return torch.from_numpy(arr)
 
 
