@@ -186,6 +186,23 @@ Training ran in two stages. None of the videos are redistributed here.
 | Staged ragging + normal | 27 + 12 | Stage 2: target-domain adaptation | Not published |
 | Held-out test sets | 12 ragging + 17 normal | Never used for training | Not published |
 
+### Dataset licences
+
+- **No videos are included in this repository.** Download each dataset from its source
+  and follow the terms its creators set. None of them publishes a clear open licence,
+  so treat them as research-only unless their creators say otherwise.
+- **The trained weights in `weights/` were learned from these datasets.** They are shared
+  for research and education. If you plan any commercial use, check each dataset's terms
+  with its creators first.
+- The AGPL-3.0 licence of this repository covers the code only, not the datasets.
+- If you use these datasets, please cite their authors:
+  - RLVS: M. M. Soliman et al., "Violence Recognition from Videos using Deep Learning
+    Techniques," ICICIS, 2019.
+  - UBI-Fights: B. Degardin and H. Proença, "Human Activity Analysis: Iterative
+    Weak/Self-Supervised Learning Frameworks for Detecting Abnormal Events," IJCB, 2020.
+  - UCF-Crime: W. Sultani, C. Chen and M. Shah, "Real-World Anomaly Detection in
+    Surveillance Videos," CVPR, 2018.
+
 `scripts/data/split_dataset.py` splits a dataset by video file (never by frame). Training was run on Kaggle with `scripts/train/train.py` (stage 1) and then `scripts/train/finetune_combined.py` (stage 2); install `requirements-train.txt` to run the training and evaluation scripts yourself.
 
 ## Limitations
