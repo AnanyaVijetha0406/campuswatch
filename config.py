@@ -28,10 +28,6 @@ TRAIN_RAW_DIR = DATA_DIR / "train_raw"
 SAMPLE_DIR = DATA_DIR / "sample"
 SPLITS_DIR = DATA_DIR / "splits"
 
-# ShanghaiTech Campus — held-out domain-transfer TEST ONLY. Never train on this.
-SHANGHAITECH_DIR = DATA_DIR / "test_shanghaitech"
-SHANGHAITECH_LABELS = SHANGHAITECH_DIR / "labels.csv"
-
 # Cached features: v2 is (NUM_FRAMES, PERSONS_PER_FRAME, INPUT_SIZE)
 CACHE_DIR = DATA_DIR / "feature_cache"
 

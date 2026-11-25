@@ -39,7 +39,7 @@ The decision threshold (0.6613) was tuned on a validation set, not fixed at 0.5.
 ├── scripts/
 │   ├── data/              # split_dataset, build_ragging_labels, check_clips, extract_features
 │   ├── train/             # train.py (RLVS base model), finetune_combined.py (deployed recipe)
-│   ├── eval/              # eval_ucfcrime, eval_shanghaitech, compare_yolo_detectors
+│   ├── eval/              # eval_ucfcrime, compare_yolo_detectors
 │   └── infer/             # infer (one clip), batch_infer (a folder), sliding_window_infer (long video)
 ├── Dockerfile, requirements.txt, requirements-train.txt, packages.txt
 ```

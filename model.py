@@ -648,7 +648,7 @@ def extract_and_cache_features(
     Skip if a cache with the expected v2 shape already exists.
 
     Augmentation is applied only when add_augmentation=True (training split).
-    Val / test / ShanghaiTech must pass add_augmentation=False.
+    Val / test must pass add_augmentation=False.
     """
     k = int(num_persons if num_persons is not None else config.PERSONS_PER_FRAME)
     video_path = Path(video_path)

@@ -6,8 +6,6 @@ Default ratio: 80% / 10% / 10%, stratified per class.
 Works the same for:
   - local tiny sample:  --source data/sample
   - full RLVS on Kaggle: --source data/train_raw  (or /kaggle/input/... path)
-
-ShanghaiTech is NOT handled here — keep it under data/test_shanghaitech only.
 """
 from __future__ import annotations
 
@@ -171,17 +169,6 @@ def main() -> None:
 
     source = args.source.resolve()
     output = args.output.resolve()
-
-    # Guard: never treat ShanghaiTech as a training / split source
-    sh_resolved = config.SHANGHAITECH_DIR.resolve()
-    try:
-        source.relative_to(sh_resolved)
-        raise SystemExit(
-            f"Refusing to split ShanghaiTech ({source}). "
-            "It is test-only — keep it under data/test_shanghaitech."
-        )
-    except ValueError:
-        pass  # source is outside the ShanghaiTech tree — OK
 
     if not source.is_dir():
         raise SystemExit(
