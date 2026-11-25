@@ -137,18 +137,38 @@ the Flask dashboard (`app.py`, with login) is what the Docker image runs.
 
 ## Results
 
-Metrics of the deployed model on its **validation split** (208 clips, threshold tuned on this same split, so treat as optimistic):
+All results are on a held-out test set of **12 staged ragging clips and 17 normal clips**
+that were never used for training. The set is small, so the numbers are indicative only.
 
-| Accuracy | Precision | Recall | F1 |
-|---|---|---|---|
-| 0.875 | 0.695 | 0.837 | 0.759 |
+### Training-data ablation
 
-Confusion matrix (rows = truth): normal → 141 correct / 18 false alarms; violence → 41 caught / 8 missed.
+Each row adds one training source to the one above it.
 
-A separate hand-picked check on 6 ragging clips never used in training found 5 of 6.
-That is a very small sample and should be read as an indication only.
-Evaluation on other datasets was weaker (ShanghaiTech F1 0.375, UCF-Crime Abuse recall 0.30).
-There is no separate untouched test split yet.
+| Training data | Ragging caught (of 12) | False alarms (of 17) |
+|---|---|---|
+| RLVS | 41.7% (5) | 0.0% (0) |
+| + UBI-Fights | 75.0% (9) | 23.5% (4) |
+| + UCF-Crime | 66.7% (8) | 23.5% (4) |
+| + Staged ragging clips (with UCF-Crime) | 75.0% (9) | 29.4% (5) |
+| **+ Staged ragging clips, no UCF-Crime (final model)** | **91.7% (11)** | 35.3% (6) |
+
+- **Validation accuracy is not ragging detection.** The RLVS-only model reached 98.5%
+  validation accuracy but caught only 41.7% of the held-out ragging clips.
+- **More data is not always better.** Adding UCF-Crime lowered ragging recall from 75.0%
+  to 66.7%, so it was left out of the final model.
+- **Final model: 11 of 12 ragging clips caught** (indicative only, McNemar p = 0.5).
+
+### Model comparison (3 seeds each)
+
+| Model | Trained params | Validation F1 (%) | Ragging recall, 12 clips (%) | False alarms, 17 clips (%) |
+|---|---|---|---|---|
+| **BiLSTM + attention (this repo)** | 662K | 72.1 ± 2.6 | **83.3 ± 8.3** | 35.3 ± 10.2 |
+| Transformer + attention | 340K | 79.8 ± 3.3 | 77.8 ± 4.8 | 52.9 ± 10.2 |
+| VideoMAE-B (end-to-end) | 86.2M | 86.6 ± 4.7 | 66.7 ± 0.0 | 25.5 ± 3.4 |
+
+- Higher source-domain scores did not give better ragging detection.
+- The BiLSTM had the best ragging recall with 130× fewer trained parameters than VideoMAE.
+- It runs on a laptop CPU at 4.7 s per 16-frame clip (Intel Core i7-1355U).
 
 ## Data
 
