@@ -2,11 +2,11 @@
 Single-video inference from the command line.
 
 Usage:
-    python infer.py path/to/video.mp4
-    python infer.py path/to/video.mp4 --model outputs/best_model_ubifights_finetuned.pt --metrics outputs/metrics_ubifights_finetuned.json
+    python scripts/infer/infer.py path/to/video.mp4
+    python scripts/infer/infer.py path/to/video.mp4 --model results/k1/best_model_ubifights_finetuned.pt --metrics results/k1/metrics_ubifights_finetuned.json
 
-Defaults to config.MODEL_PATH / config.METRICS_PATH (outputs/best_model.pt,
-outputs/metrics.json) if --model/--metrics are omitted.
+Defaults to the deployed model, config.MODEL_PATH / config.METRICS_PATH
+(weights/), if --model/--metrics are omitted.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from model import ViolenceClassifier, extract_video_features, load_classifier
@@ -72,8 +72,8 @@ def predict(video_path: Path, model: ViolenceClassifier, threshold: float, devic
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run violence-detection inference on a single video.")
     parser.add_argument("video", type=Path, help="Path to a video file (.mp4, .avi, .mov, .mkv, .webm)")
-    parser.add_argument("--model", type=Path, default=config.MODEL_PATH, help="Path to checkpoint .pt (default: outputs/best_model.pt)")
-    parser.add_argument("--metrics", type=Path, default=config.METRICS_PATH, help="Path to metrics.json for tuned threshold (default: outputs/metrics.json)")
+    parser.add_argument("--model", type=Path, default=config.MODEL_PATH, help="Path to checkpoint .pt (default: deployed model in weights/)")
+    parser.add_argument("--metrics", type=Path, default=config.METRICS_PATH, help="Path to metrics.json for tuned threshold (default: deployed metrics in weights/)")
     parser.add_argument("--threshold", type=float, default=None, help="Override the decision threshold directly, skipping metrics.json")
     args = parser.parse_args()
 

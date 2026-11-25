@@ -36,15 +36,27 @@ video ──► 16 frames, evenly spaced over the whole clip
 Only the BiLSTM + attention head is trained; YOLOv8n and ResNet18 stay frozen.
 The decision threshold (0.6613) was tuned on a validation set, not fixed at 0.5.
 
-| File | Purpose |
-|---|---|
-| `app.py` | Flask dashboard (login, upload, verdict) |
-| `model.py` | Feature extraction pipeline and the BiLSTM + attention classifier |
-| `config.py` | Paths, frame count, threshold, model location |
-| `infer.py`, `batch_infer.py` | Command-line inference on one video / a folder |
-| `finetune_combined.py` | Training script (run on Kaggle) |
-| `eval_shanghaitech.py`, `eval_ucfcrime.py` | Cross-dataset evaluation scripts |
-| `outputs_no_UCF/` | The deployed checkpoint and its metrics |
+## Project structure
+
+```
+.
+├── app.py                 # Flask dashboard with login (what the Docker image runs)
+├── gradio_app.py          # Gradio app (what the Hugging Face Space runs)
+├── inference.py           # Shared inference core used by both apps
+├── model.py               # Feature pipeline (YOLO + ResNet18) and BiLSTM + attention classifier
+├── config.py              # Paths, frame count, threshold, model settings
+├── templates/, static/    # Flask HTML templates, alarm sound
+├── weights/               # yolov8n.pt + the deployed classifier and its metrics
+├── results/               # Metrics JSON of the other training runs (k1 = largest person, k3 = top-3 ablation)
+├── scripts/
+│   ├── data/              # split_dataset, build_ragging_labels, check_clips, extract_features
+│   ├── train/             # train.py (RLVS base model), finetune_combined.py (deployed recipe)
+│   ├── eval/              # eval_ucfcrime, eval_shanghaitech, compare_yolo_detectors
+│   └── infer/             # infer (one clip), batch_infer (a folder), sliding_window_infer (long video)
+├── Dockerfile, requirements.txt, requirements-train.txt, packages.txt
+```
+
+Run every script from the repository root, for example `python scripts/infer/infer.py clip.mp4`.
 
 ## Run it
 
@@ -82,8 +94,9 @@ Open http://127.0.0.1:5000. (`PORT=8080 python app.py` to change the port.)
 ### Command line
 
 ```bash
-python infer.py path/to/clip.mp4
-python batch_infer.py path/to/folder
+python scripts/infer/infer.py path/to/clip.mp4
+python scripts/infer/batch_infer.py path/to/folder
+python scripts/infer/sliding_window_infer.py path/to/long_video.mp4
 ```
 
 ## Configuration
@@ -147,7 +160,7 @@ Training combined these sources; none of the videos are redistributed here.
 | Self-collected staged ragging / hard-negative clips (39) | Fine-tuning | Not published (third-party video) |
 | ShanghaiTech Campus (`nikanvasei/shanghaitech-campus-dataset-test`), UCF-Crime Abuse/Normal (`minmints/ufc-crime-full-dataset`) | Evaluation (UCF-Crime was also used in one ablation run) | Kaggle |
 
-`split_dataset.py` splits a dataset by video file (never by frame). Training was run on Kaggle with `finetune_combined.py`; install `requirements-train.txt` to run the training and evaluation scripts yourself.
+`scripts/data/split_dataset.py` splits a dataset by video file (never by frame). Training was run on Kaggle with `scripts/train/train.py` (RLVS base) and then `scripts/train/finetune_combined.py`; install `requirements-train.txt` to run the training and evaluation scripts yourself.
 
 ## Limitations
 

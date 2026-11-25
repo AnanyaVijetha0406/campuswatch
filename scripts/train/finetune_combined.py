@@ -7,7 +7,7 @@ v2 architecture change: features are (NUM_FRAMES, K, 516) with K=3 largest
 persons per frame, then learned person-attention pooling. A v1 RLVS
 checkpoint (K=1, no person_attn) cannot be loaded as --base-model unless
 you pass --allow-partial-v1-init (LSTM/fc copied, person_attn random).
-Agreed protocol: train v2 on RLVS first (extract_features.py + main.py),
+Agreed protocol: train v2 on RLVS first (extract_features.py + train.py),
 then pass that checkpoint here. Omit UCF-Crime flags (deployed recipe).
 
 self-ragging-dir / self-normal-dir add real staged ragging clips -- the
@@ -18,13 +18,13 @@ threshold from the held-out validation set's precision-recall curve and
 saves it as "best_threshold" in metrics.json.
 
 Kaggle — step 1 (RLVS v2 baseline):
-  python extract_features.py --split-dir .../train --cache-dir /kaggle/working/feature_cache/rlvs_k3/train
-  python extract_features.py --split-dir .../val   --cache-dir /kaggle/working/feature_cache/rlvs_k3/val
-  python extract_features.py --split-dir .../test  --cache-dir /kaggle/working/feature_cache/rlvs_k3/test
-  python main.py --cache-dir /kaggle/working/feature_cache/rlvs_k3 --output-dir /kaggle/working/outputs_rlvs_k3
+  python scripts/data/extract_features.py --split-dir .../train --cache-dir /kaggle/working/feature_cache/rlvs_k3/train
+  python scripts/data/extract_features.py --split-dir .../val   --cache-dir /kaggle/working/feature_cache/rlvs_k3/val
+  python scripts/data/extract_features.py --split-dir .../test  --cache-dir /kaggle/working/feature_cache/rlvs_k3/test
+  python scripts/train/train.py --cache-dir /kaggle/working/feature_cache/rlvs_k3 --output-dir /kaggle/working/outputs_rlvs_k3
 
 Kaggle — step 2 (UBI + self, no UCF):
-  python finetune_combined.py
+  python scripts/train/finetune_combined.py
     --ubifights-dir "/kaggle/input/datasets/intissarziani/ubi-fightsall/UBI_FIGHTS/videos"
     --self-ragging-dir "/kaggle/input/datasets/<you>/<ragging-dataset>/ragging_clips/ragging_clips"
     --self-normal-dir "/kaggle/input/datasets/<you>/<ragging-dataset>/normal/normal"
@@ -55,7 +55,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from model import (
@@ -165,7 +165,7 @@ def load_base_model(
         if not allow_partial_v1:
             raise SystemExit(
                 f"Base checkpoint is v1 (K={ckpt_k}, no person attention). "
-                "Train v2 on RLVS first (extract_features.py + main.py) and pass "
+                "Train v2 on RLVS first (extract_features.py + train.py) and pass "
                 "that best_model.pt here. Or pass --allow-partial-v1-init to copy "
                 "LSTM/temporal-attn/fc and randomly initialize person_attn."
             )
@@ -204,7 +204,7 @@ def main() -> None:
         "--base-model",
         type=Path,
         required=True,
-        help="v2 RLVS best_model.pt from main.py (Top-K person attention)",
+        help="v2 RLVS best_model.pt from train.py (Top-K person attention)",
     )
     parser.add_argument(
         "--allow-partial-v1-init",

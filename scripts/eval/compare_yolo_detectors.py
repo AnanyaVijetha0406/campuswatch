@@ -6,7 +6,7 @@ stronger detector changes the zero-vector (no-person-detected) rate and
 downstream predictions, at a fraction of the cost of a full retrain.
 
 Usage:
-  python compare_yolo_detectors.py
+  python scripts/eval/compare_yolo_detectors.py
 """
 from __future__ import annotations
 
@@ -16,15 +16,15 @@ from pathlib import Path
 
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from ultralytics import YOLO
 
 import config
 from model import count_zero_frames, extract_video_features, get_cnn_encoder, load_classifier
 
-MODEL_PATH = Path("outputs_no_UCF/best_model_combined2_finetuned.pt")
-DETECTORS = ["yolov8n.pt", "yolov8s.pt"]
+MODEL_PATH = config.MODEL_PATH
+DETECTORS = [str(config.WEIGHTS_DIR / "yolov8n.pt"), str(config.WEIGHTS_DIR / "yolov8s.pt")]
 
 RAGGING_DIR = Path(r"data/ragging_test_clips")
 RAGGING_CLIPS = [

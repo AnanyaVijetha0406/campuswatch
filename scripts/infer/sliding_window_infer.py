@@ -15,8 +15,8 @@ threshold (hysteresis) -- a single noisy window crossing the line isn't
 enough, avoiding the false-alarm-flood problem discussed for real-time use.
 
 Usage:
-  python sliding_window_infer.py path/to/video.mp4
-  python sliding_window_infer.py path/to/video.mp4 --window-sec 4 --stride-sec 2
+  python scripts/infer/sliding_window_infer.py path/to/video.mp4
+  python scripts/infer/sliding_window_infer.py path/to/video.mp4 --window-sec 4 --stride-sec 2
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ import cv2
 import numpy as np
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 import model as model_module

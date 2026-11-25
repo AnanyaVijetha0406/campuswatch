@@ -11,7 +11,7 @@ people whose box centers are nearest each other (closest-group, the
 interaction cluster) instead of just the largest boxes, then pool them with
 a learned PersonAttention layer before the same BiLSTM+attention head.
 K=3 closest-group was evaluated but not deployed -- same real-clip recall
-as K=1 with ~2x the false-positive rate (see CONTINUE.md). K=1 always uses
+as K=1 with ~2x the false-positive rate (see results/k3/). K=1 always uses
 largest-area regardless of PERSON_SELECT, so v1 checkpoints load unchanged.
 
 Person attention is the only new trainable module for K>1; YOLO and
@@ -283,7 +283,7 @@ _yolo_model: YOLO | None = None
 _cnn_encoder: ResNet18Encoder | None = None
 
 
-def get_yolo(weights: str = "yolov8n.pt") -> YOLO:
+def get_yolo(weights: str = config.YOLO_WEIGHTS) -> YOLO:
     global _yolo_model
     if _yolo_model is None:
         _yolo_model = YOLO(weights)

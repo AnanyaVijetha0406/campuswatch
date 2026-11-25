@@ -49,7 +49,7 @@ NUM_FRAMES = 16
 # beyond K are dropped. Fewer than K are zero-padded and masked in person attention.
 # Deployed model is K=1 (the K=3 closest-group ablation underperformed it on the
 # real ragging-clip test -- same recall, ~2x the false-positive rate -- and a
-# threshold sweep confirmed it wasn't just a calibration issue; see CONTINUE.md).
+# threshold sweep confirmed it wasn't just a calibration issue; see results/k3/).
 PERSONS_PER_FRAME = 1
 # How to pick which K people when YOLO sees more than K:
 #   "closest_group" — tightest cluster of K box centers (interaction-centric)
@@ -67,18 +67,20 @@ THRESHOLD = 0.6613  # default; app.py prefers best_threshold from metrics.json
 RANDOM_SEED = int(os.environ.get("CAMPUSWATCH_SEED", "42"))
 # Temporal head: "bilstm" (deployed model) or "transformer" (reviewer baseline).
 TEMPORAL_HEAD = os.environ.get("CAMPUSWATCH_TEMPORAL", "bilstm")
-YOLO_WEIGHTS = "yolov8n.pt"
+WEIGHTS_DIR = PROJECT_ROOT / "weights"
+YOLO_WEIGHTS = str(WEIGHTS_DIR / "yolov8n.pt")
 
 # ---------------------------------------------------------------------------
 # Training (Phase 2) — single source of truth
 # ---------------------------------------------------------------------------
+# Default output folder for new training runs (git-ignored).
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 
 # Deployed model: K=1 (largest person per frame). RLVS -> fine-tuned once on
 # UBI-FIGHTS + self-collected ragging data, without UCF-Crime -- best real-world
 # recall (5/6 on held-out ragging clips) among every checkpoint tested.
-MODEL_PATH = PROJECT_ROOT / "outputs_no_UCF" / "best_model_combined2_finetuned.pt"
-METRICS_PATH = PROJECT_ROOT / "outputs_no_UCF" / "metrics_combined2_finetuned.json"
+MODEL_PATH = WEIGHTS_DIR / "best_model_combined2_finetuned.pt"
+METRICS_PATH = WEIGHTS_DIR / "metrics_combined2_finetuned.json"
 
 BATCH_SIZE = 8
 LEARNING_RATE = 1e-4

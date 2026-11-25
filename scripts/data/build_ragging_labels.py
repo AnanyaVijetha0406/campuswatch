@@ -6,7 +6,7 @@ non-fight-shaped coercion and humiliation (forced tasks, grabbing, mild
 contact) that a model trained only on overt fights doesn't recognize.
 
 Usage:
-  python build_ragging_labels.py \
+  python scripts/data/build_ragging_labels.py \
     --ragging-dir "path\\to\\ragging_clips" \
     --normal-dir "path\\to\\normal_clips" \
     --out ragging_labels.csv

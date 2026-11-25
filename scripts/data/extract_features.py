@@ -2,9 +2,9 @@
 Extract and cache YOLO+ResNet18+bbox features for a split tree.
 
 Usage (local sample sanity check):
-  python extract_features.py --split-dir data/splits/train --cache-dir data/feature_cache/train --augment
-  python extract_features.py --split-dir data/splits/val   --cache-dir data/feature_cache/val
-  python extract_features.py --split-dir data/splits/test  --cache-dir data/feature_cache/test
+  python scripts/data/extract_features.py --split-dir data/splits/train --cache-dir data/feature_cache/train --augment
+  python scripts/data/extract_features.py --split-dir data/splits/val   --cache-dir data/feature_cache/val
+  python scripts/data/extract_features.py --split-dir data/splits/test  --cache-dir data/feature_cache/test
 
 On Kaggle, point --split-dir / --cache-dir at /kaggle/working/... paths
 (or update config.SPLITS_DIR / config.CACHE_DIR).
@@ -17,7 +17,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from model import FEATURE_DIM, cache_split_tree, extract_and_cache_features

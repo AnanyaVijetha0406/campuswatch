@@ -20,8 +20,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-# Allow running as `python split_dataset.py` from project root
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+# Allow running as `python scripts/data/split_dataset.py` from project root
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 

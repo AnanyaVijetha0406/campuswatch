@@ -14,7 +14,7 @@ same as everywhere else in this project — a conservative lower bound, since
 16 frames spread across a long video may miss a short abuse event entirely.
 
 Usage (Kaggle):
-  python eval_ucfcrime.py \
+  python scripts/eval/eval_ucfcrime.py \
     --abuse-dir "/kaggle/input/datasets/minmints/ufc-crime-full-dataset/Anomaly-Videos-Part-1/Anomaly-Videos-Part-1/Abuse" \
     --normal-dir "/kaggle/input/datasets/minmints/ufc-crime-full-dataset/Testing_Normal_Videos/Testing_Normal_Videos_Anomaly" \
     --annotation-file "/kaggle/input/datasets/minmints/ufc-crime-full-dataset/Temporal_Anomaly_Annotation_for_Testing_Videos.txt" \
@@ -36,7 +36,7 @@ import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 import model as model_module

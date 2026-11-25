@@ -5,7 +5,7 @@ Used for quick screening of a folder of clips outside the formal eval
 scripts (compare_yolo_detectors.py, eval_ucfcrime.py, etc.).
 
 Usage:
-  python batch_infer.py [folder] [model_path] [threshold]
+  python scripts/infer/batch_infer.py [folder] [model_path] [threshold]
 """
 import glob
 import os
@@ -15,13 +15,13 @@ from pathlib import Path
 
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from model import extract_video_features, load_classifier
 
 FOLDER = sys.argv[1] if len(sys.argv) > 1 else r"data/ragging_clips"
-MODEL_PATH = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("outputs/best_model_combined_finetuned.pt")
+MODEL_PATH = Path(sys.argv[2]) if len(sys.argv) > 2 else config.MODEL_PATH
 THRESHOLD = float(sys.argv[3]) if len(sys.argv) > 3 else 0.7355
 
 device = config.DEVICE

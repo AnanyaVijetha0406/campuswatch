@@ -32,8 +32,7 @@ RUN python -c "from torchvision import models; models.resnet18(weights=models.Re
 COPY config.py model.py inference.py app.py ./
 COPY templates ./templates
 COPY static ./static
-COPY yolov8n.pt ./
-COPY outputs_no_UCF/best_model_combined2_finetuned.pt outputs_no_UCF/metrics_combined2_finetuned.json ./outputs_no_UCF/
+COPY weights/yolov8n.pt weights/best_model_combined2_finetuned.pt weights/metrics_combined2_finetuned.json ./weights/
 
 RUN useradd --create-home --uid 1000 appuser \
     && mkdir -p /app/uploads \
