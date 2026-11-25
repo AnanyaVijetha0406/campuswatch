@@ -6,6 +6,10 @@ or ragging-like physical aggression, with a confidence score.
 **Live demo:** https://huggingface.co/spaces/AnanyaVij/campuswatch (free ZeroGPU Space; the first request after idle can take a minute while it wakes)
 **Login:** none for the Gradio Space. The Flask dashboard (`app.py`, used by the Docker image) asks for `APP_USERNAME` / `APP_PASSWORD` (local default: `admin` / `admin123`).
 
+![CampusWatch dashboard flagging a sample clip as violence with 98.4% confidence](docs/dashboard.png)
+
+*The Flask dashboard after analysing a sample clip. The video preview is blurred because the clip comes from a third-party dataset.*
+
 > **This is a screening aid, not an evidence tool.** It can miss incidents and
 > raise false alarms (see [Limitations](#limitations)). A person must review every
 > alert before any action is taken.
