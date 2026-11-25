@@ -164,19 +164,32 @@ Training combined these sources; none of the videos are redistributed here.
 
 ## Limitations
 
-- **It detects violence-like motion and appearance, not ragging as such.** Non-contact
-  humiliation (for example pouring water, forced feeding) was missed by every checkpoint.
-- **Only the largest person per frame is analysed**, and there is no tracking, so group
-  interactions are only partly seen.
-- **16 frames per clip**: a short incident inside a long video can be diluted. Clips are
-  limited to 60 s for this reason and for speed.
-- **False alarms are common** (precision 0.695 on validation, and real-world precision
-  would be lower because real incidents are rare).
-- Training ragging data is small (39 clips) and staged, so behaviour on real CCTV
-  (low resolution, night, crowded) is untested.
-- Roughly 30% of sampled frames can contain no detected person, which the model sees as empty.
-- Analysing video of students raises consent and privacy questions that this demo does
-  not address. Do not use it to accuse anyone.
+- **Small, staged data.** The model was adapted to ragging with only 27 staged ragging
+  and 12 normal clips, and tested on 12 held-out ragging and 17 normal clips. With a
+  test set this small the confidence intervals are wide, so the results are indicative
+  only (McNemar p = 0.5 between the main variants).
+- **Misses non-contact humiliation.** Low-motion, one-sided ragging (humiliation without
+  physical contact) is the hardest case. End-to-end VideoMAE missed the same clips in
+  every seed.
+- **False alarms on friendly contact.** All 6 false alarms on the held-out normal clips
+  (6 of 17) were friendly physical contact: hugging, dancing, Holi and a group selfie.
+- **Sensitive to video quality.** Blur and 240p resolution cut recall from 11 to 7 of 12
+  ragging clips. Halving brightness raised false alarms from 6 to 10 of 17.
+
+| Condition (final model, held-out clips) | Ragging caught (of 12) | False alarms (of 17) |
+|---|---|---|
+| Clean | 11 | 6 |
+| Brightness ×0.5 | 11 | 10 |
+| Gaussian blur | 7 | 3 |
+| Gaussian noise (σ = 25) | 10 | 8 |
+| 25% occlusion | 8 | 7 |
+| 240p resolution | 7 | 4 |
+
+- **Not yet tested on real campus CCTV.** All evaluation used staged or public clips, not
+  real multi-camera campus footage.
+- **No multi-person tracking**, so group dynamics are only partly captured.
+- **A screening aid, not an evidence tool.** Run it on-premises, have a person review
+  every flag, and blur faces where possible. Do not use it to accuse anyone.
 
 ## Licence and credits
 
