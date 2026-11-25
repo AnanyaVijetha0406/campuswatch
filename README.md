@@ -205,5 +205,7 @@ Training ran in two stages. None of the videos are redistributed here.
 ## Licence and credits
 
 Uses [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (AGPL-3.0) and
-torchvision's ImageNet ResNet18. Datasets keep their own licences. Add a `LICENSE`
-file for this repository's own code before publishing.
+torchvision's ImageNet ResNet18. Datasets keep their own licences.
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE),
+the same licence as YOLOv8.
