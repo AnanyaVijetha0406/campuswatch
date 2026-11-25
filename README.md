@@ -172,16 +172,21 @@ Each row adds one training source to the one above it.
 
 ## Data
 
-Training combined these sources; none of the videos are redistributed here.
+Training ran in two stages. None of the videos are redistributed here.
 
-| Dataset | Use | Link |
-|---|---|---|
-| RLVS (Real Life Violence Situations) | Base training | kaggle.com/datasets/mohamedmustafa/real-life-violence-situations-dataset |
-| UBI-FIGHTS | Fine-tuning | kaggle.com/datasets/intissarziani/ubi-fightsall |
-| Self-collected staged ragging / hard-negative clips (39) | Fine-tuning | Not published (third-party video) |
-| ShanghaiTech Campus (`nikanvasei/shanghaitech-campus-dataset-test`), UCF-Crime Abuse/Normal (`minmints/ufc-crime-full-dataset`) | Evaluation (UCF-Crime was also used in one ablation run) | Kaggle |
+1. **Stage 1:** a base violence model trained on RLVS.
+2. **Stage 2:** adapted to surveillance footage and to ragging with UBI-Fights and the
+   staged clips. The decision threshold (τ = 0.661) was set at maximum F1 on validation.
 
-`scripts/data/split_dataset.py` splits a dataset by video file (never by frame). Training was run on Kaggle with `scripts/train/train.py` (RLVS base) and then `scripts/train/finetune_combined.py`; install `requirements-train.txt` to run the training and evaluation scripts yourself.
+| Dataset | Clips | Role | Link |
+|---|---|---|---|
+| RLVS (Real Life Violence Situations) | ~2,000 violence / non-violence | Stage 1: base violence model | kaggle.com/datasets/mohamedmustafa/real-life-violence-situations-dataset |
+| UBI-Fights | 1,000 surveillance fight / normal | Stage 2: domain adaptation | kaggle.com/datasets/intissarziani/ubi-fightsall |
+| UCF-Crime (Abuse + Normal) | 100 | Ablation only, excluded from the final model | kaggle.com/datasets/minmints/ufc-crime-full-dataset |
+| Staged ragging + normal | 27 + 12 | Stage 2: target-domain adaptation | Not published |
+| Held-out test sets | 12 ragging + 17 normal | Never used for training | Not published |
+
+`scripts/data/split_dataset.py` splits a dataset by video file (never by frame). Training was run on Kaggle with `scripts/train/train.py` (stage 1) and then `scripts/train/finetune_combined.py` (stage 2); install `requirements-train.txt` to run the training and evaluation scripts yourself.
 
 ## Limitations
 
