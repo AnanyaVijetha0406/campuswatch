@@ -1,15 +1,3 @@
----
-title: CampusWatch
-emoji: 🎥
-colorFrom: yellow
-colorTo: red
-sdk: gradio
-sdk_version: 5.50.0
-python_version: "3.12.12"
-app_file: gradio_app.py
-pinned: false
----
-
 # CampusWatch — Campus Ragging / Violence Screening
 
 A web dashboard that takes a short video clip and says whether it shows violence
@@ -107,7 +95,6 @@ python scripts/infer/sliding_window_infer.py path/to/long_video.mp4
 | `SECRET_KEY` | random per start | Session signing key. Set it so logins survive restarts. |
 | `HOST` / `PORT` | `127.0.0.1` / `5000` (`0.0.0.0` / `7860` in Docker) | Where the server listens |
 | `MAX_UPLOAD_MB` | `100` | Largest accepted upload |
-| `MAX_VIDEO_SECONDS` | `60` | Longest accepted clip |
 | `TORCH_THREADS` | `min(4, cores)` | CPU threads for inference |
 
 Uploaded clips are stored under a random name, visible only to the session that
@@ -120,7 +107,21 @@ on a Gradio Space, which is free. The Docker SDK is a paid Spaces feature, so th
 image is for running the project yourself, not for the Space.
 
 1. Create a Space at https://huggingface.co/new-space with the **Gradio** SDK (Blank template). If only ZeroGPU hardware is offered on your account, pick it; `gradio_app.py` keeps the models on CPU and wraps the request in `@spaces.GPU`, as ZeroGPU requires.
-2. Push this repository to the Space. The YAML block at the top of this README sets the Gradio version, Python version and entry file:
+2. Add this settings block as the very first lines of `README.md` (Hugging Face reads it to pick the Gradio version, Python version and entry file), commit, then push the repository to the Space:
+
+   ```yaml
+   ---
+   title: CampusWatch
+   emoji: 🎥
+   colorFrom: yellow
+   colorTo: red
+   sdk: gradio
+   sdk_version: 5.50.0
+   python_version: "3.12.12"
+   app_file: gradio_app.py
+   pinned: false
+   ---
+   ```
 
    ```bash
    git remote add space https://huggingface.co/spaces/<you>/<name>
@@ -171,23 +172,8 @@ Training combined these sources; none of the videos are redistributed here.
 - **Misses non-contact humiliation.** Low-motion, one-sided ragging (humiliation without
   physical contact) is the hardest case. End-to-end VideoMAE missed the same clips in
   every seed.
-- **False alarms on friendly contact.** All 6 false alarms on the held-out normal clips
-  (6 of 17) were friendly physical contact: hugging, dancing, Holi and a group selfie.
-- **Sensitive to video quality.** Blur and 240p resolution cut recall from 11 to 7 of 12
-  ragging clips. Halving brightness raised false alarms from 6 to 10 of 17.
-
-| Condition (final model, held-out clips) | Ragging caught (of 12) | False alarms (of 17) |
-|---|---|---|
-| Clean | 11 | 6 |
-| Brightness ×0.5 | 11 | 10 |
-| Gaussian blur | 7 | 3 |
-| Gaussian noise (σ = 25) | 10 | 8 |
-| 25% occlusion | 8 | 7 |
-| 240p resolution | 7 | 4 |
-
 - **Not yet tested on real campus CCTV.** All evaluation used staged or public clips, not
   real multi-camera campus footage.
-- **No multi-person tracking**, so group dynamics are only partly captured.
 - **A screening aid, not an evidence tool.** Run it on-premises, have a person review
   every flag, and blur faces where possible. Do not use it to accuse anyone.
 
